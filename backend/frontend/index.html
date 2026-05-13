@@ -1,93 +1,316 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Overwatch Matchmaking</title>
+<meta charset="UTF-8">
+<title>SkillMatch</title>
 
-    <style>
-        body {
-            font-family: Arial;
-            background: #1e1e1e;
-            color: white;
-            padding: 30px;
-        }
+<style>
 
-        button {
-            padding: 10px;
-            margin-top: 10px;
-            cursor: pointer;
-        }
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #1e1e2f;
+    color: white;
+}
 
-        .player {
-            background: #333;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 8px;
-        }
-    </style>
+/* SIDEBAR */
+.sidebar {
+    width: 220px;
+    height: 100vh;
+    background: #141426;
+    position: fixed;
+    padding: 20px;
+}
+
+/* HEADER */
+.header {
+    margin-left: 220px;
+    height: 80px;
+    background: #2a2a3d;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.login {
+    background: transparent;
+    border: 1px solid #5a5afc;
+    color: #5a5afc;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.register {
+    background: #5a5afc;
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* SEARCH */
+.search {
+    margin-left: 100px;
+    background: #1e1e2f;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    color: white;
+}
+
+/* PROFILE */
+.profile {
+    width: 40px;
+    height: 40px;
+    background: #444;
+    border-radius: 50%;
+}
+
+/* MAIN */
+.main {
+    margin-left: 220px;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.content {
+    width: 100%;
+    max-width: 900px;
+}
+
+/* PLAYERS */
+.player {
+    background: #2a2a3d;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+/* BOTÃO */
+.match-btn {
+    margin-top: 20px;
+    padding: 12px;
+    background: #5a5afc;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    display: none;
+}
+
+/* 🔥 MODAL CORRIGIDO */
+.modal-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0,0,0,0.75);
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999; /* 🔥 garante que fique por cima */
+}
+
+/* MODAL */
+.modal {
+    background: #2a2a3d;
+    padding: 30px;
+    border-radius: 12px;
+    width: 320px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.modal input {
+    width: 85%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: none;
+    text-align: center;
+}
+
+.modal button {
+    width: 85%;
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #5a5afc;
+    color: white;
+    cursor: pointer;
+}
+
+.close {
+    background: transparent !important;
+    color: #aaa;
+}
+
+</style>
 </head>
+
 <body>
 
-    <h1>Overwatch Matchmaking</h1>
+<div class="sidebar">
+    <h2>SkillMatch</h2>
+</div>
 
-    <button onclick="buscarPlayers()">
-        Buscar Jogadores
-    </button>
+<div class="header">
+    <input class="search" placeholder="Pesquisar...">
 
-    <button onclick="buscarPartida()">
-        Encontrar Partida
-    </button>
+    <div class="header-right">
+        <button class="login" onclick="abrirLogin()">Login</button>
+        <button class="register" onclick="abrirCadastro()">Criar Conta</button>
+        <div class="profile"></div>
+    </div>
+</div>
 
-    <div id="resultado"></div>
+<div class="main">
+    <div class="content">
 
-    <script>
+        <h1>OVERWATCH</h1>
 
-        async function buscarPlayers() {
+        <button class="match-btn" id="matchBtn" onclick="buscarPartida()">
+            Entrar em Time
+        </button>
 
-            const response = await fetch("/players")
+        <h2>Time Encontrado</h2>
+        <div id="resultado"></div>
 
-            const data = await response.json()
+    </div>
+</div>
 
-            let html = "<h2>Jogadores</h2>"
+<!-- LOGIN -->
+<div class="modal-bg" id="loginModal">
+    <div class="modal">
+        <h2>Login</h2>
 
-            data.forEach(player => {
+        <input id="login_name" placeholder="Nome">
+        <input id="login_password" type="password" placeholder="Senha">
 
-                html += `
-                    <div class="player">
-                        <strong>${player.name}</strong><br>
-                        Rank: ${player.rank}<br>
-                        Winrate: ${player.winrate}%
-                    </div>
-                `
-            })
+        <button onclick="login()">Entrar</button>
+        <button class="close" onclick="fecharModais()">Fechar</button>
+    </div>
+</div>
 
-            document.getElementById("resultado").innerHTML = html
-        }
+<!-- CADASTRO -->
+<div class="modal-bg" id="cadastroModal">
+    <div class="modal">
+        <h2>Criar Conta</h2>
 
+        <input id="reg_name" placeholder="Nome">
+        <input id="reg_password" type="password" placeholder="Senha">
+        <input id="reg_rank" placeholder="Rank">
+        <input id="reg_role" placeholder="Role">
+        <input id="reg_winrate" placeholder="Winrate (%)">
 
-        async function buscarPartida() {
+        <button onclick="criarConta()">Criar Conta</button>
+        <button class="close" onclick="fecharModais()">Fechar</button>
+    </div>
+</div>
 
-            const response = await fetch("/matchmaking/Melissa")
+<script>
 
-            const data = await response.json()
+let usuarioLogado = null
 
-            let html = "<h2>Time Encontrado</h2>"
+function abrirLogin() {
+    document.getElementById("loginModal").style.display = "flex"
+}
 
-            data.forEach(player => {
+function abrirCadastro() {
+    document.getElementById("cadastroModal").style.display = "flex"
+}
 
-                html += `
-                    <div class="player">
-                        <strong>${player.name}</strong><br>
-                        Rank: ${player.rank}<br>
-                        Winrate: ${player.winrate}%
-                    </div>
-                `
-            })
+function fecharModais() {
+    document.getElementById("loginModal").style.display = "none"
+    document.getElementById("cadastroModal").style.display = "none"
+}
 
-            document.getElementById("resultado").innerHTML = html
-        }
+async function login() {
 
-    </script>
+    const name = document.getElementById("login_name").value
+    const password = document.getElementById("login_password").value
+
+    const response = await fetch("/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ name, password })
+    })
+
+    const data = await response.json()
+
+    if (data.error) {
+        alert(data.error)
+        return
+    }
+
+    usuarioLogado = name
+
+    alert("Login realizado!")
+
+    document.getElementById("matchBtn").style.display = "block"
+
+    fecharModais()
+}
+
+async function criarConta() {
+
+    const player = {
+        name: document.getElementById("reg_name").value,
+        password: document.getElementById("reg_password").value,
+        rank: document.getElementById("reg_rank").value,
+        role: document.getElementById("reg_role").value,
+        winrate: parseInt(document.getElementById("reg_winrate").value)
+    }
+
+    await fetch("/players", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(player)
+    })
+
+    alert("Conta criada!")
+    fecharModais()
+}
+
+async function buscarPartida() {
+
+    const response = await fetch(`/matchmaking/${usuarioLogado}`)
+    const data = await response.json()
+
+    let html = "<h3>Seu Time:</h3>"
+
+    data.forEach(player => {
+        html += `
+            <div class="player">
+                <strong>${player.name}</strong><br>
+                Rank: ${player.rank}<br>
+                Winrate: ${player.winrate}%
+            </div>
+        `
+    })
+
+    document.getElementById("resultado").innerHTML = html
+}
+
+</script>
 
 </body>
 </html>

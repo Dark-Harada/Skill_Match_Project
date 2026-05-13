@@ -1,4 +1,4 @@
-from backend.database import players_collection
+from database import players_collection
 
 players = [
     {
